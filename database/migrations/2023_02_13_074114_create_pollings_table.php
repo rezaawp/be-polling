@@ -16,6 +16,7 @@ return new class extends Migration
         Schema::create('pollings', function (Blueprint $table) {
             $table->id();
             $table->text('question');
+            $table->string('thumbnail');
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();

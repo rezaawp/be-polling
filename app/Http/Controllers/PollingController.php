@@ -8,6 +8,8 @@ use App\Models\Choise;
 use App\Models\Polling;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rules\File;
 
 class PollingController extends Controller
 {
@@ -40,15 +42,33 @@ class PollingController extends Controller
     public function store(Request $request, Polling $polling, Choise $choise)
     {
         $data = $request->all();
-
         $pisah = explode("\n", $data['choises']);
-
         $data['user_id'] = auth()->user()->id;
-        $store = ApiHelper::store($polling, ['question' => ['required', 'min: 4']], $data);
 
-        if (!$store) {
-            return Response::json(400, $store['message']);
+        $validator = Validator::make($data, [
+            'thumbnail' => [
+                File::image()
+                    ->min(0)
+                    ->max(12 * 1024)
+            ]
+        ]);
+
+        if ($validator->fails()) {
+            return Response::json(422, 'Validation Error', $validator->errors());
         }
+        $nama_gambar = time() . '.' .  $request->file('thumbnail')->extension();
+        $request->file('thumbnail')->move(public_path(''), $nama_gambar);
+
+        $data['thumbnail'] = $nama_gambar;
+
+        $store = ApiHelper::store($polling, [
+            'question' => ['required', 'min:4'],
+        ], $data);
+
+        if (!$store['status']) {
+            return Response::json(400, $store['message'], $store['data']);
+        }
+
 
         $polling_id = $store['data']['id'];
         foreach ($pisah as $c) {
