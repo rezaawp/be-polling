@@ -25,7 +25,7 @@ class PollingController extends Controller
             $q->with('votes.user')->withCount('votes');
         }, 'choises.votes'])->withCount(['votes', 'choises'])->get()->map(function ($polling) {
             for ($i = 0; $i < $polling['choises_count']; $i++) {
-                $polling->choises[$i]->percentage = $polling->choises[$i]['votes_count'] == 0 ? 0 : $polling['votes_count'] / $polling->choises[$i]['votes_count'] * 100;
+                $polling->choises[$i]->percentage = round($polling->choises[$i]['votes_count'] == 0 ? 0 : $polling->choises[$i]['votes_count'] / $polling['votes_count'] * 100);
                 if ($polling->user_id == auth()->user()->id) {
                     $polling->my_poll = true;
                 } else if ($polling->user_id !== auth()->user()->id) {
@@ -97,9 +97,12 @@ class PollingController extends Controller
     {
         $data = $polling->load(['choises'  => function (Builder $q) {
             $q->with('votes.user')->withCount('votes');
-        }, 'choises.votes'])->loadCount(['votes', 'choises'])->get()->map(function ($polling) {
+        }, 'choises.votes'])->loadCount(['votes', 'choises']);
+
+
+        $data = collect([$data])->map(function ($polling) {
             for ($i = 0; $i < $polling['choises_count']; $i++) {
-                $polling->choises[$i]->percentage = $polling->choises[$i]['votes_count'] == 0 ? 0 : $polling['votes_count'] / $polling->choises[$i]['votes_count'] * 100;
+                $polling->choises[$i]->percentage = round($polling->choises[$i]['votes_count'] == 0 ? 0 : $polling->choises[$i]['votes_count'] / $polling['votes_count'] * 100);
                 if ($polling->user_id == auth()->user()->id) {
                     $polling->my_poll = true;
                 } else if ($polling->user_id !== auth()->user()->id) {
@@ -109,8 +112,10 @@ class PollingController extends Controller
             }
 
             return $polling;
-        });
-        return ApiHelper::show($polling->load(['choises']));
+        });;
+        $data = $data->first();
+
+        return ApiHelper::show($data);
     }
 
     public function destroy(Polling $polling)

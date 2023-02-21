@@ -17,6 +17,7 @@ return new class extends Migration
             $table->id();
             $table->text('question');
             $table->string('thumbnail');
+            $table->dateTime('deadline')->nullable();
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();

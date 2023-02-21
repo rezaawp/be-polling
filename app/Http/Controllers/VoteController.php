@@ -18,16 +18,22 @@ class VoteController extends Controller
     {
         $data = $request->all();
         $data['user_id'] = auth()->user()->id;
-        $store = ApiHelper::store($vote, [
-            'user_id' => ['required', 'numeric'],
-            'polling_id' => ['required', 'numeric'],
-            'choise_id' => ['numeric', 'required']
-        ], $data);
 
-        if ($store['status']){
-            return Response::json(200, $store['message'], $store['data']);
-        } else if (!$store['status']){
-            return Response::json(500, $store['message'], $store['data']);
+        $cari_vote = Vote::where('user_id', $data['user_id'])->where('polling_id', $data['polling_id'])->first();
+        if ($cari_vote) {
+            return Response::json(422, 'sudah pernah vote');
+        } else if (!$cari_vote) {
+            $store = ApiHelper::store($vote, [
+                'user_id' => ['required', 'numeric'],
+                'polling_id' => ['required', 'numeric'],
+                'choise_id' => ['numeric', 'required']
+            ], $data);
+
+            if ($store['status']) {
+                return Response::json(200, $store['message'], $store['data']);
+            } else if (!$store['status']) {
+                return Response::json(500, $store['message'], $store['data']);
+            }
         }
     }
 }
