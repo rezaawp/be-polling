@@ -24,17 +24,7 @@ class PollingController extends Controller
         $data = Polling::with(['choises'  => function (Builder $q) {
             $q->with('votes.user')->withCount('votes');
         }, 'choises.votes'])->withCount(['votes', 'choises'])->get()->map(function ($polling) {
-            for ($i = 0; $i < $polling['choises_count']; $i++) {
-                $polling->choises[$i]->percentage = round($polling->choises[$i]['votes_count'] == 0 ? 0 : $polling->choises[$i]['votes_count'] / $polling['votes_count'] * 100);
-                if ($polling->user_id == auth()->user()->id) {
-                    $polling->my_poll = true;
-                } else if ($polling->user_id !== auth()->user()->id) {
-                    unset($polling->choises[$i]->votes);
-                    $polling->my_poll = false;
-                }
-            }
-
-            return $polling;
+            return ApiHelper::resultPolling($polling);
         });
         return ApiHelper::show($data);
     }
@@ -42,7 +32,15 @@ class PollingController extends Controller
     public function store(Request $request, Polling $polling, Choise $choise)
     {
         $data = $request->all();
-        $pisah = explode("\n", $data['choises']);
+
+        // return 
+        // json_decode()
+        $pisah = json_decode($data['choises']);
+
+        // $pisah = array($pisah)[0];
+        // return Response::json(400, count($pisah), $pisah);
+
+        // return $pisah;
 
         if (count($pisah) == 1 || count($pisah) <= 1) {
             return Response::json(422, 'Choises minimal nya adalah 2', $pisah);
@@ -106,22 +104,7 @@ class PollingController extends Controller
 
 
         $data = collect([$data])->map(function ($polling) {
-            if (strtotime($polling->deadline) < time()) {
-                $polling->is_deadline = true;
-            } else {
-                $polling->is_deadline = false;
-            }
-            for ($i = 0; $i < $polling['choises_count']; $i++) {
-                $polling->choises[$i]->percentage = round($polling->choises[$i]['votes_count'] == 0 ? 0 : $polling->choises[$i]['votes_count'] / $polling['votes_count'] * 100);
-                if ($polling->user_id == auth()->user()->id) {
-                    $polling->my_poll = true;
-                } else if ($polling->user_id !== auth()->user()->id) {
-                    unset($polling->choises[$i]->votes);
-                    $polling->my_poll = false;
-                }
-            }
-
-            return $polling;
+            return ApiHelper::resultPolling($polling);
         });;
         $data = $data->first();
 
@@ -131,5 +114,16 @@ class PollingController extends Controller
     public function destroy(Polling $polling)
     {
         return ApiHelper::destroy($polling);
+    }
+
+    public function myPollings()
+    {
+        $user_id = auth()->user()->id;
+        $data = Polling::where('user_id', $user_id)->with(['choises'  => function (Builder $q) {
+            $q->with('votes.user')->withCount('votes');
+        }, 'choises.votes'])->withCount(['votes', 'choises'])->get()->map(function ($polling) {
+            return ApiHelper::resultPolling($polling);
+        });
+        return ApiHelper::show($data);
     }
 }

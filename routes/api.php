@@ -25,6 +25,10 @@ Route::apiResources([
     'vote' => VoteController::class
 ]);
 
+Route::controller(PollingController::class)->group(function() {
+    Route::get('my-polings', 'myPollings');
+});
+
 Route::prefix('auth')->group(function () {
     require __DIR__ . '/auth.php';
 });

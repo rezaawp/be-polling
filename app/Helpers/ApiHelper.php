@@ -73,18 +73,31 @@ class ApiHelper
 
     public static function destroy($model)
     {
-        // try {
-        //     DB::
-        // } catch (Exception $e) {
-
-        //     return Response::json(500, 'Server Interna Error', $e->getMessage());
-        // }
-
         $delete = $model->delete();
         if ($delete) {
             return Response::json(200, "Success Deleted");
         } else {
             return Response::json(500, 'Data Tidak Berhasil Di Hapus');
         }
+    }
+
+    public static function resultPolling($polling)
+    {
+        if (strtotime($polling->deadline) < time()) {
+            $polling->is_deadline = true;
+        } else {
+            $polling->is_deadline = false;
+        }
+        for ($i = 0; $i < $polling['choises_count']; $i++) {
+            $polling->choises[$i]->percentage = round($polling->choises[$i]['votes_count'] == 0 ? 0 : $polling->choises[$i]['votes_count'] / $polling['votes_count'] * 100);
+            if ($polling->user_id == auth()->user()->id) {
+                $polling->my_poll = true;
+            } else if ($polling->user_id !== auth()->user()->id) {
+                unset($polling->choises[$i]->votes);
+                $polling->my_poll = false;
+            }
+        }
+
+        return $polling;
     }
 }
