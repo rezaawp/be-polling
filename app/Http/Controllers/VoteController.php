@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Helpers\ApiHelper;
 use App\Helpers\Response;
+use App\Models\Polling;
 use App\Models\Vote;
 use Illuminate\Http\Request;
 
@@ -20,6 +21,12 @@ class VoteController extends Controller
         $data['user_id'] = auth()->user()->id;
 
         $cari_vote = Vote::where('user_id', $data['user_id'])->where('polling_id', $data['polling_id'])->first();
+        $cari_polling = Polling::find($data['polling_id']);
+
+        if (strtotime($cari_polling['deadline']) < time()) {
+            return Response::json(400, 'Sudah melewati deadline');
+        }
+        
         if ($cari_vote) {
             return Response::json(422, 'sudah pernah vote');
         } else if (!$cari_vote) {
