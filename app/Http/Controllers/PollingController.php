@@ -43,6 +43,11 @@ class PollingController extends Controller
     {
         $data = $request->all();
         $pisah = explode("\n", $data['choises']);
+
+        if (count($pisah) == 1 || count($pisah) <= 1) {
+            return Response::json(422, 'Choises minimal nya adalah 2', $pisah);
+        }
+
         $data['user_id'] = auth()->user()->id;
 
         $validator = Validator::make($data, [
@@ -101,6 +106,11 @@ class PollingController extends Controller
 
 
         $data = collect([$data])->map(function ($polling) {
+            if (strtotime($polling->deadline) < time()) {
+                $polling->is_deadline = true;
+            } else {
+                $polling->is_deadline = false;
+            }
             for ($i = 0; $i < $polling['choises_count']; $i++) {
                 $polling->choises[$i]->percentage = round($polling->choises[$i]['votes_count'] == 0 ? 0 : $polling->choises[$i]['votes_count'] / $polling['votes_count'] * 100);
                 if ($polling->user_id == auth()->user()->id) {
