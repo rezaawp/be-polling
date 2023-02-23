@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\PollingEvent;
 use App\Helpers\ApiHelper;
 use App\Helpers\Response;
 use App\Models\Choise;
@@ -32,15 +33,7 @@ class PollingController extends Controller
     public function store(Request $request, Polling $polling, Choise $choise)
     {
         $data = $request->all();
-
-        // return 
-        // json_decode()
         $pisah = json_decode($data['choises']);
-
-        // $pisah = array($pisah)[0];
-        // return Response::json(400, count($pisah), $pisah);
-
-        // return $pisah;
 
         if (count($pisah) == 1 || count($pisah) <= 1) {
             return Response::json(422, 'Choises minimal nya adalah 2', $pisah);
@@ -72,7 +65,6 @@ class PollingController extends Controller
             return Response::json(400, $store['message'], $store['data']);
         }
 
-
         $polling_id = $store['data']['id'];
         foreach ($pisah as $c) {
             $data_store_choise = [
@@ -91,9 +83,10 @@ class PollingController extends Controller
             }
         }
 
-        $result = Polling::where('id', $polling_id)->with(['choises'])->first();
-        return ApiHelper::show($result);
-        return Response::json(200, $store['message'], $store['data']);
+        $data = Polling::where('id', $polling_id)->with(['choises'])->first();
+        $result = ApiHelper::show($data);
+        broadcast(new PollingEvent(array($data)));
+        return $result;
     }
 
     public function show(Polling $polling)

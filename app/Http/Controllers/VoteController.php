@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\VoteEvent;
 use App\Helpers\ApiHelper;
 use App\Helpers\Response;
 use App\Models\Polling;
@@ -26,7 +27,7 @@ class VoteController extends Controller
         if (strtotime($cari_polling['deadline']) < time()) {
             return Response::json(400, 'Sudah melewati deadline');
         }
-        
+
         if ($cari_vote) {
             return Response::json(422, 'sudah pernah vote');
         } else if (!$cari_vote) {
@@ -37,6 +38,7 @@ class VoteController extends Controller
             ], $data);
 
             if ($store['status']) {
+                broadcast(new VoteEvent(array(Polling::find($data['polling_id']))));
                 return Response::json(200, $store['message'], $store['data']);
             } else if (!$store['status']) {
                 return Response::json(500, $store['message'], $store['data']);

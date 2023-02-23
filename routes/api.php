@@ -1,5 +1,6 @@
 <?php
 
+use App\Events\PollingEvent;
 use App\Http\Controllers\PollingController;
 use App\Http\Controllers\VoteController;
 use Illuminate\Http\Request;
@@ -25,8 +26,12 @@ Route::apiResources([
     'vote' => VoteController::class
 ]);
 
-Route::controller(PollingController::class)->group(function() {
+Route::controller(PollingController::class)->group(function () {
     Route::get('my-pollings', 'myPollings');
+});
+
+Route::get('tes-event', function () {
+    broadcast(new PollingEvent(['status' => 200, 'message' => 'ada poll baru', 'data' => ['1', '2']]));
 });
 
 Route::prefix('auth')->group(function () {
