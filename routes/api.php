@@ -30,10 +30,6 @@ Route::controller(PollingController::class)->group(function () {
     Route::get('my-pollings', 'myPollings');
 });
 
-Route::get('tes-event', function () {
-    broadcast(new PollingEvent(['status' => 200, 'message' => 'ada poll baru', 'data' => ['1', '2']]));
-});
-
 Route::prefix('auth')->group(function () {
     require __DIR__ . '/auth.php';
 });
