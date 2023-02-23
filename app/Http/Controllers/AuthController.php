@@ -13,8 +13,6 @@ use Illuminate\Validation\Rule;
 
 class AuthController extends Controller
 {
-    //
-
     function __construct()
     {
         $this->middleware('auth:api', ['only' => ['me', 'logout', 'resetPassword']]);
@@ -29,8 +27,11 @@ class AuthController extends Controller
                 return Response::json(401, 'Unauthorized', []);
             }
 
+            $token = auth()->claims(['username' => auth()->user()->name])->attempt($credentials);
+
             return Response::json(200, 'Register Success', [
                 'token' => $token,
+                'user' => auth()->user(),
                 'token_type' => 'bearer',
                 'expired_id' => auth()->factory()->getTTL() * 60
             ]);
@@ -41,8 +42,11 @@ class AuthController extends Controller
                 return Response::json(401, 'Unauthorized', []);
             }
 
+            $token = auth()->claims(['username' => auth()->user()->name])->attempt($credentials);
+
             return Response::json(200, 'Login Success', [
                 'token' => $token,
+                'user' => auth()->user(),
                 'token_type' => 'bearer',
                 'expired_id' => auth()->factory()->getTTL() * 60
             ]);
