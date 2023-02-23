@@ -26,7 +26,7 @@ Route::apiResources([
 ]);
 
 Route::controller(PollingController::class)->group(function() {
-    Route::get('my-polings', 'myPollings');
+    Route::get('my-pollings', 'myPollings');
 });
 
 Route::prefix('auth')->group(function () {
