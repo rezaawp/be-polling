@@ -83,7 +83,11 @@ class PollingController extends Controller
             }
         }
 
-        $data = Polling::where('id', $polling_id)->with(['choises'])->first();
+        $data = Polling::where('id', $polling_id)->with(['choises'  => function (Builder $q) {
+            $q->with('votes.user')->withCount('votes');
+        }, 'choises.votes'])->withCount(['votes', 'choises'])->get()->map(function ($polling) {
+            return ApiHelper::resultPolling($polling);
+        })->first();
         $result = ApiHelper::show($data);
         broadcast(new PollingEvent(array($data)));
         return $result;
