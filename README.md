@@ -1,4 +1,12 @@
 ```
+composer update
+```
+
+```
+php artisan key:generate
+```
+
+```
 php artisan jwt:secret
 ```
 
@@ -7,7 +15,7 @@ php artisan websockets:serve
 ```
 
 ```
-php aetisan serve
+php artisan serve
 ```
 
 Kalo CRUD ga jalan silahkan baca bagaimana menghilangkan cache route di link bawah ini :
