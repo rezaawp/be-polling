@@ -1,9 +1,9 @@
 {
     "apps": [
         {
-            "name": "be-polling-2",
+            "name": "be-polling-antrian",
             "script": "artisan",
-            "args": ["serve", "--host=0.0.0.0", "--port=8002"],
+            "args": ["queue:work"],
             "instances": "1",
             "wait_ready": true,
             "autorestart": false,
